@@ -10,7 +10,7 @@
 - **设备清单解析**：支持 GPU 服务器、后端/前端 Leaf/Spine 交换机、带内/带外管理交换机
 - **紧凑端口格式**：`QSFP56:200:uplink:8, SFP28:25:uplink:2` 一条字符串定义全部端口
 - **距离计算**：走线架高度 + 曼哈顿距离 + `tray_offset`（同排直连 / 跨排走通道）
-- **线缆匹配**：QSFP112(800G) ~ RJ45(1G)，自动按距离选 DAC/AOC/光纤，含 Breakout 检查
+- **线缆匹配**：QSFP112(400G) ~ RJ45(1G)，自动按距离选 DAC/AOC/光纤，含 Breakout 检查
 - **连接规则**：一对一、多对一（汇聚）、Mesh（Spine-Leaf），支持 Leaf↔Spine 隔离
 - **三语 Excel 输出**：中文 / 日本語 / English，含端口映射、线缆按长度 BOM、光模块清单、设备统计
 
@@ -168,7 +168,7 @@ rules:
 
 | 端口 | 速度 | ≤3m / ≤5m | 中距离 | >30m |
 |------|------|-----------|--------|------|
-| QSFP112 | 800G | QSFP112 DAC (≤3m) | QSFP112 AOC (3–30m) | QSFP112 SR8 光纤 |
+| QSFP112 | 400G | QSFP112 DAC (≤3m) | QSFP112 AOC (3–30m) | QSFP112 SR4 光纤 |
 | OSFP | 800G | OSFP 800G DAC (≤3m) | OSFP 800G AOC (3–30m) | OSFP 800G SR8 光纤 |
 | QSFP56-DD | 400G | QSFP56-DD DAC (≤5m) | QSFP56-DD AOC (5–30m) | QSFP56-DD SR8 光纤 |
 | QSFP56 | 200G | QSFP56 DAC (≤5m) | QSFP56 AOC (5–30m) | QSFP56 SR4 光纤 |
@@ -205,7 +205,7 @@ ai-dc-port-mapper/
 │   ├── models.py                        # 数据模型（Device, Port, Rack, Connection 等）
 │   ├── parser.py                        # 输入解析（Excel / YAML + 参数化布局）
 │   ├── distance.py                      # 线缆长度计算
-│   ├── cable_matcher.py                 # 线缆类型匹配（含 QSFP112/OSFP 800G）
+│   ├── cable_matcher.py                 # 线缆类型匹配（含 QSFP112/OSFP）
 │   ├── mapper.py                        # 端口映射核心（one_to_one / many_to_one / mesh）
 │   ├── writer.py                        # 多语言 Excel 输出
 │   ├── i18n.py                          # 中/日/英三语字符串

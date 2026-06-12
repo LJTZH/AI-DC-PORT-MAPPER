@@ -55,11 +55,11 @@ class _CableEntry:
 
 # Ordered cable catalog — first match wins
 CABLE_CATALOG: list[_CableEntry] = [
-    # ── QSFP112 800G ──
-    _CableEntry("QSFP112", 800, "DAC",   "QSFP112 DAC",      0.5, 3.0),
-    _CableEntry("QSFP112", 800, "AOC",   "QSFP112 AOC",      3.0, 30.0),
-    _CableEntry("QSFP112", 800, "Fiber", "QSFP112 SR8 Fiber", 30.0, 500.0,
-                transceiver_type="QSFP112 SR8", connector="MTP/MPO-16"),
+    # ── QSFP112 400G (4×112G PAM4) ──
+    _CableEntry("QSFP112", 400, "DAC",   "QSFP112 DAC",      0.5, 3.0),
+    _CableEntry("QSFP112", 400, "AOC",   "QSFP112 AOC",      3.0, 30.0),
+    _CableEntry("QSFP112", 400, "Fiber", "QSFP112 SR4 Fiber", 30.0, 500.0,
+                transceiver_type="QSFP112 SR4", connector="MTP/MPO-12"),
 
     # ── OSFP 800G ──
     _CableEntry("OSFP", 800, "DAC",   "OSFP 800G DAC",      0.5, 3.0),
@@ -327,14 +327,13 @@ def get_port_type_compatibility(
 
     # Breakout scenarios: higher-speed port → multiple lower-speed ports
     breakout_pairs = {
-        # 800G breakouts
-        (PortType.QSFP112, PortType.QSFP56_DD): "QSFP112→2×QSFP56-DD breakout possible",
-        (PortType.QSFP112, PortType.QSFP56):    "QSFP112→4×QSFP56 breakout possible",
-        (PortType.QSFP112, PortType.QSFP28):    "QSFP112→8×QSFP28 breakout possible",
+        # 800G breakouts (OSFP)
         (PortType.OSFP, PortType.QSFP56_DD):    "OSFP→2×QSFP56-DD breakout possible",
         (PortType.OSFP, PortType.QSFP56):       "OSFP→4×QSFP56 breakout possible",
         (PortType.OSFP, PortType.QSFP28):       "OSFP→8×QSFP28 breakout possible",
-        (PortType.OSFP, PortType.QSFP112):      "OSFP→QSFP112 compatible (same 800G form factor)",
+        # 400G breakouts / fan-outs (QSFP112)
+        (PortType.QSFP112, PortType.QSFP56):    "QSFP112→2×QSFP56 fan-out possible",
+        (PortType.QSFP112, PortType.QSFP28):    "QSFP112→4×QSFP28 fan-out possible",
         # 400G breakouts
         (PortType.QSFP56_DD, PortType.QSFP56): "QSFP56-DD→2×QSFP56 breakout possible",
         (PortType.QSFP56_DD, PortType.QSFP28): "QSFP56-DD→4×QSFP28 breakout possible",

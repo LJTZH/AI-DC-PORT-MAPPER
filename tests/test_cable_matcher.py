@@ -93,34 +93,34 @@ class TestCableMatching:
         result = match_cable(PortType.QSFP56, 200, 5.0)
         assert result.cable_category == "DAC"
 
-    # ── QSFP112 800G ──
+    # ── QSFP112 400G (4×112G PAM4) ──
 
     def test_qsfp112_dac_short(self):
-        result = match_cable(PortType.QSFP112, 800, 2.0)
+        result = match_cable(PortType.QSFP112, 400, 2.0)
         assert result.cable_category == "DAC"
         assert "QSFP112 DAC" == result.cable_type
         assert not result.needs_transceiver
 
     def test_qsfp112_aoc_medium(self):
-        result = match_cable(PortType.QSFP112, 800, 15.0)
+        result = match_cable(PortType.QSFP112, 400, 15.0)
         assert result.cable_category == "AOC"
         assert "QSFP112 AOC" == result.cable_type
 
     def test_qsfp112_fiber_long(self):
-        result = match_cable(PortType.QSFP112, 800, 80.0)
+        result = match_cable(PortType.QSFP112, 400, 80.0)
         assert result.cable_category == "Fiber"
         assert result.needs_transceiver
-        assert result.transceiver_type == "QSFP112 SR8"
+        assert result.transceiver_type == "QSFP112 SR4"
         assert result.transceiver_count == 2
 
     def test_qsfp112_boundary_dac_3m(self):
         """At exactly 3m, QSFP112 DAC is still selected."""
-        result = match_cable(PortType.QSFP112, 800, 3.0)
+        result = match_cable(PortType.QSFP112, 400, 3.0)
         assert result.cable_category == "DAC"
 
     def test_qsfp112_boundary_aoc_3_01m(self):
         """Just beyond 3m, AOC takes over for QSFP112."""
-        result = match_cable(PortType.QSFP112, 800, 3.1)
+        result = match_cable(PortType.QSFP112, 400, 3.1)
         assert result.cable_category == "AOC"
 
     # ── OSFP 800G ──
@@ -161,12 +161,12 @@ class TestPortCompatibility:
         ok, msg = get_port_type_compatibility(PortType.QSFP56, PortType.RJ45)
         assert not ok
 
-    # ── QSFP112 / OSFP 800G breakouts ──
+    # ── QSFP112 / OSFP breakouts ──
 
-    def test_breakout_qsfp112_to_qsfp56_dd(self):
-        ok, msg = get_port_type_compatibility(PortType.QSFP112, PortType.QSFP56_DD)
+    def test_breakout_qsfp112_to_qsfp28(self):
+        ok, msg = get_port_type_compatibility(PortType.QSFP112, PortType.QSFP28)
         assert ok
-        assert "QSFP112" in msg
+        assert "fan-out" in msg.lower()
 
     def test_breakout_qsfp112_to_qsfp56(self):
         ok, msg = get_port_type_compatibility(PortType.QSFP112, PortType.QSFP56)
@@ -175,11 +175,6 @@ class TestPortCompatibility:
     def test_breakout_osfp_to_qsfp56_dd(self):
         ok, msg = get_port_type_compatibility(PortType.OSFP, PortType.QSFP56_DD)
         assert ok
-
-    def test_breakout_osfp_to_qsfp112_compatible(self):
-        ok, msg = get_port_type_compatibility(PortType.OSFP, PortType.QSFP112)
-        assert ok
-        assert "compatible" in msg.lower()
 
     def test_breakout_qsfp56_dd_to_sfp28(self):
         ok, msg = get_port_type_compatibility(PortType.QSFP56_DD, PortType.SFP28)

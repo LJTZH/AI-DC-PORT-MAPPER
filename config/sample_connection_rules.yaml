@@ -105,11 +105,11 @@ rules:
   #   priority: 6
   #   cable_preference: fiber
 
-  # ── QSFP112 / OSFP 800G 示例 (取消注释以启用) ──
-  # QSFP112 是 800G (8×100G PAM4) 端口, OSFP 也支持 800G.
-  # DAC ≤3m | AOC 3–30m | 光纤 >30m (配 QSFP112 SR8 或 OSFP 800G SR8 光模块).
+  # ── QSFP112 400G / OSFP 800G 示例 (取消注释以启用) ──
+  # QSFP112 = 400G (4×112G PAM4), OSFP = 800G (8×112G PAM4).
+  # DAC ≤3m | AOC 3–30m | 光纤 >30m (配 QSFP112 SR4 或 OSFP 800G SR8 光模块).
   #
-  # - name: "GPU 800G → Backend Leaf 800G"
+  # - name: "GPU 400G → Backend Leaf 400G"
   #   src_device_type: gpu_server
   #   src_port_type: QSFP112
   #   src_direction: uplink
@@ -132,5 +132,5 @@ rules:
   #   priority: 3
   #   cable_preference: fiber
   #
-  # 支持的 breakouts: QSFP112→2×QSFP56-DD | QSFP112→4×QSFP56 |
-  #                    OSFP→2×QSFP56-DD | OSFP→4×QSFP56
+  # 支持的 breakouts: QSFP112→4×QSFP28 (fan-out) |
+  #                    OSFP→2×QSFP56-DD | OSFP→4×QSFP56 | OSFP→8×QSFP28

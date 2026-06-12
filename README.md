@@ -15,7 +15,7 @@ with correct Leaf↔Spine pairing for Spine-Leaf topologies.
   all ports in a single cell with sequential auto-naming
 - **Distance calculation**: Overhead cable tray model with Manhattan distance
   and `tray_offset` — distinguishes same-row direct routing from cross-row aisle routing
-- **Cable matching**: QSFP112 (800G) through RJ45 (1G), auto-selects DAC/AOC/Fiber
+- **Cable matching**: QSFP112 (400G) through RJ45 (1G), auto-selects DAC/AOC/Fiber
   by distance, with breakout compatibility checks
 - **Connection patterns**: One-to-one, many-to-one (aggregation), mesh (Spine-Leaf)
   with hard Leaf↔Spine isolation
@@ -177,7 +177,7 @@ Total = (horizontal + vertical_A + vertical_B) / 1000 × slack_factor (1.15)
 
 | Port | Speed | Short | Medium | Long |
 |------|-------|-------|--------|------|
-| QSFP112 | 800G | DAC (≤3m) | AOC (3–30m) | QSFP112 SR8 Fiber |
+| QSFP112 | 400G | DAC (≤3m) | AOC (3–30m) | QSFP112 SR4 Fiber |
 | OSFP | 800G | DAC (≤3m) | AOC (3–30m) | OSFP 800G SR8 Fiber |
 | QSFP56-DD | 400G | DAC (≤5m) | AOC (5–30m) | QSFP56-DD SR8 Fiber |
 | QSFP56 | 200G | DAC (≤5m) | AOC (5–30m) | QSFP56 SR4 Fiber |
@@ -215,7 +215,7 @@ ai-dc-port-mapper/
 │   ├── models.py                        # Data models
 │   ├── parser.py                        # Input parsers (Excel/YAML + parametric layout)
 │   ├── distance.py                      # Cable length calculation
-│   ├── cable_matcher.py                 # Cable type matching (QSFP112/OSFP 800G)
+│   ├── cable_matcher.py                 # Cable type matching (QSFP112/OSFP)
 │   ├── mapper.py                        # Port mapping engine
 │   ├── writer.py                        # Multi-language Excel output
 │   ├── i18n.py                          # Chinese / Japanese / English strings
