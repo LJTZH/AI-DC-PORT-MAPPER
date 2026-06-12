@@ -275,10 +275,13 @@ def _parse_ports_compact(text: str) -> list[Port]:
         return []
 
     # ── Comma-separated: each item may be count-based or individual ──
-    # Each count-based group independently starts at Port1 so that ports
-    # belonging to different networks have clean per-network numbering.
-    # Example: "QSFP56:200:uplink:8, SFP28:25:uplink:2, RJ45:1:uplink:1"
-    #   → Port1-8 (QSFP56/200G backend), Port1-2 (SFP28/25G frontend), Port1 (RJ45/mgmt)
+    # Same port type shares sequential numbering regardless of direction or
+    # how many comma entries define them, so that all ports of a given speed
+    # are numbered consecutively on a device.
+    # Example: "QSFP56:200:uplink:8, SFP28:25:uplink:2, SFP28:25:downlink:2"
+    #   → QSFP56 Port1-8, SFP28 Port1-4 (2 uplink + 2 downlink combined)
+
+    type_counters: dict[str, int] = {}
 
     items = text.split(",")
     for item in items:
@@ -292,13 +295,16 @@ def _parse_ports_compact(text: str) -> list[Port]:
             port_type = PortType(port_type_str.strip())
             speed = int(speed_str.strip())
             direction = PortDirection(dir_str.strip())
-            for i in range(1, count + 1):
+            ptype = port_type_str.strip()
+            start = type_counters.get(ptype, 0) + 1
+            for i in range(start, start + count):
                 ports.append(Port(
                     port_name=f"Port{i}",
                     port_type=port_type,
                     speed_gbps=speed,
                     direction=direction,
                 ))
+            type_counters[ptype] = start + count - 1
             continue
 
         # Individual sub-item: "NAME:TYPE:SPEED[:DIR[:GROUP]]"

@@ -67,26 +67,37 @@ class TestParsePortsCompact:
         assert _parse_ports_compact("") == []
         assert _parse_ports_compact("   ") == []
 
-    def test_mixed_count_based_per_group(self):
-        """Each comma-separated group independently starts at Port1."""
+    def test_mixed_count_based_per_type(self):
+        """Same port type shares sequential numbering across entries."""
         ports = _parse_ports_compact(
             "QSFP56:200:uplink:3, SFP28:25:uplink:2, RJ45:1:downlink:1"
         )
         assert len(ports) == 6
-        # Group 1: Port1-3 (QSFP56/200G)
+        # QSFP56: Port1-3
         assert ports[0].port_name == "Port1"
         assert ports[0].port_type == PortType.QSFP56
         assert ports[2].port_name == "Port3"
-        # Group 2: Port1-2 (SFP28/25G)
+        # SFP28: Port1-2
         assert ports[3].port_name == "Port1"
         assert ports[3].port_type == PortType.SFP28
         assert ports[4].port_name == "Port2"
-        # Group 3: Port1 (RJ45/1G)
+        # RJ45: Port1
         assert ports[5].port_name == "Port1"
         assert ports[5].port_type == PortType.RJ45
 
+    def test_same_type_combined_numbering(self):
+        """Two entries of same type, different directions -> sequential Port1..N."""
+        ports = _parse_ports_compact(
+            "QSFP56:200:downlink:3, QSFP56:200:uplink:2"
+        )
+        assert len(ports) == 5
+        assert ports[0].port_name == "Port1"
+        assert ports[2].port_name == "Port3"  # last downlink
+        assert ports[3].port_name == "Port4"  # first uplink, continues counter
+        assert ports[4].port_name == "Port5"
+
     def test_mixed_individual_and_count_based(self):
-        """Individual named port + count-based; count-based restarts at Port1."""
+        """Individual named port + count-based; count-based uses Port1..N."""
         ports = _parse_ports_compact(
             "Mgmt:QSFP56:200:uplink, SFP28:25:downlink:2"
         )
