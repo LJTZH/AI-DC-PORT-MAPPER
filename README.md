@@ -1,37 +1,45 @@
-# AI 数据中心端口映射表生成器
+# AI Data Center Port Mapping Generator
 
-自动生成 AI 数据中心端口映射表的 Python 工具。根据机柜布局、设备清单和连接规则，
-计算线缆长度并自动匹配线缆类型（DAC / AOC / 光纤 / 铜缆），
-支持 Spine-Leaf 拓扑中 Leaf↔Spine 的正确配对。
+A Python tool that automatically generates data center port mapping tables
+for GPU clusters. Given rack layouts, device inventories, and connection rules,
+it calculates cable lengths and matches cable types (DAC / AOC / Fiber / Copper),
+with correct Leaf↔Spine pairing for Spine-Leaf topologies.
 
-## 功能
+## Features
 
-- **参数化机柜布局**：指定行列数、间距、走线架参数，自动生成机柜坐标和编号
-- **设备清单解析**：支持 GPU 服务器、后端/前端 Leaf/Spine 交换机、带内/带外管理交换机
-- **紧凑端口格式**：`QSFP56:200:uplink:8, SFP28:25:uplink:2` 一条字符串定义全部端口
-- **距离计算**：走线架高度 + 曼哈顿距离 + `tray_offset`（同排直连 / 跨排走通道）
-- **线缆匹配**：QSFP112(800G) ~ RJ45(1G)，自动按距离选 DAC/AOC/光纤，含 Breakout 检查
-- **连接规则**：一对一、多对一（汇聚）、Mesh（Spine-Leaf），支持 Leaf↔Spine 隔离
-- **三语 Excel 输出**：中文 / 日本語 / English，含端口映射、线缆按长度 BOM、光模块清单、设备统计
+- **Parametric rack layout**: Specify rows, columns, spacing, and tray parameters
+  once — rack coordinates and IDs are auto-generated
+- **Device parsing**: GPU servers, backend/frontend Leaf/Spine switches,
+  in-band/OOB management switches
+- **Compact port notation**: `QSFP56:200:uplink:8, SFP28:25:uplink:2` defines
+  all ports in a single cell with sequential auto-naming
+- **Distance calculation**: Overhead cable tray model with Manhattan distance
+  and `tray_offset` — distinguishes same-row direct routing from cross-row aisle routing
+- **Cable matching**: QSFP112 (800G) through RJ45 (1G), auto-selects DAC/AOC/Fiber
+  by distance, with breakout compatibility checks
+- **Connection patterns**: One-to-one, many-to-one (aggregation), mesh (Spine-Leaf)
+  with hard Leaf↔Spine isolation
+- **Tri-lingual Excel output**: Chinese / Japanese / English with port mapping,
+  per-length cable BOM, transceiver summary, and device statistics
 
-## 快速开始
+## Quick Start
 
-### 安装
+### Install
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 生成示例数据
+### Generate sample data
 
 ```bash
 python scripts/generate_samples.py
 ```
 
-### 运行
+### Run
 
 ```bash
-# 使用参数化 YAML 机柜布局（推荐）
+# Parametric YAML rack layout (recommended)
 python -m src.main \
     --racks config/sample_rack_layout.yaml \
     --devices config/sample_devices.xlsx \
@@ -40,72 +48,72 @@ python -m src.main \
     --output output/port_mapping.xlsx
 ```
 
-### 运行测试
+### Run tests
 
 ```bash
 python -m pytest tests/ -v
 ```
 
-## 输入文件格式
+## Input File Formats
 
-### 1. 机柜布局（YAML 参数化格式，推荐）
+### 1. Rack Layout (YAML parametric format, recommended)
 
 ```yaml
 layout:
   num_rows: 2
   racks_per_row: 8
-  col_spacing_m: 0.8       # 同排相邻机柜中心距 (x 方向, m)
-  row_spacing_m: 3.0       # 排间距 (y 方向, m)
+  col_spacing_m: 0.8       # center-to-center distance between adjacent racks (x)
+  row_spacing_m: 3.0       # distance between rows (y)
   rack_width_mm: 600
   rack_depth_mm: 1200
   rack_height_u: 42
-  tray_height_m: 2.6       # 走线架距地面高度
-  tray_side: low           # 走线架位置: low / high
-  tray_offset_m: 0.6       # 机柜中心到通道走线架的水平距离
+  tray_height_m: 2.6       # cable tray height from floor
+  tray_side: low           # tray position: low / high
+  tray_offset_m: 0.6       # horizontal distance from rack center to aisle tray
   origin_x_m: 0.0
   origin_y_m: 0.0
 ```
 
-机柜坐标自动计算：`x = origin_x + (col-1) × col_spacing`，
-`y = origin_y + (row-1) × row_spacing`。
-机柜编号自动生成为 `RowXX-RackXX`。
+Coordinates are auto-calculated: `x = origin_x + (col-1) × col_spacing`,
+`y = origin_y + (row-1) × row_spacing`.
+Rack IDs are auto-generated as `RowXX-RackXX`.
 
-也兼容 Excel 显式格式（逐行填写 rack_id, x_m, y_m 等列）。
+An explicit Excel format (one row per rack with rack_id, x_m, y_m columns) is also supported.
 
-### 2. 设备清单（Excel）
+### 2. Device Inventory (Excel)
 
 | name | device_type | rack_id | ru_start | ru_height | ports |
 |------|-------------|---------|----------|-----------|-------|
 | GPU-Server-01 | gpu_server | Row01-Rack01 | 20 | 4 | `QSFP56:200:uplink:8, SFP28:25:uplink:2, RJ45:1:uplink:1` |
 
-**支持的设备类型：**
+**Supported device types:**
 
-| 类型 | 说明 |
-|------|------|
-| `gpu_server` | GPU 服务器 |
-| `backend_leaf` | 后端 Leaf 交换机（面向 GPU 服务器） |
-| `backend_spine` | 后端 Spine 交换机（互联 Leaf） |
-| `frontend_leaf` | 前端 Leaf 交换机（存储/业务网络） |
-| `frontend_spine` | 前端 Spine 交换机 |
-| `mgmt_switch` | 带外管理交换机（BMC/IPMI） |
-| `inband_switch` | 带内管理交换机 |
-| `backend_switch` | 后端通用（同时匹配 leaf 和 spine） |
-| `frontend_switch` | 前端通用 |
-| `rdma_switch` / `eth_switch` | 旧名称，兼容 |
+| Type | Description |
+|------|-------------|
+| `gpu_server` | GPU server |
+| `backend_leaf` | Backend leaf switch (faces GPU servers) |
+| `backend_spine` | Backend spine switch (interconnects leaves) |
+| `frontend_leaf` | Frontend leaf switch (storage/service LAN) |
+| `frontend_spine` | Frontend spine switch |
+| `mgmt_switch` | Out-of-band management switch (BMC/IPMI) |
+| `inband_switch` | In-band management switch |
+| `backend_switch` | Generic backend (matches both leaf and spine) |
+| `frontend_switch` | Generic frontend |
+| `rdma_switch` / `eth_switch` | Legacy names (backward compatible) |
 
-**端口紧凑格式：**
+**Compact port notation:**
 
-一条字符串定义所有端口，逗号分隔，多种格式可混用：
+A single cell defines all ports, comma-separated, with mixed styles:
 
-- **计数式**：`QSFP56:200:uplink:8` → 生成 Port1~Port8，类型 QSFP56/200G/uplink
-- **独立式**：`Mgmt:RJ45:1:uplink:bond0` → 命名端口 Mgmt
-- **混合**：`QSFP56:200:uplink:8, SFP28:25:uplink:2, Mgmt:RJ45:1:uplink`
+- **Count-based**: `QSFP56:200:uplink:8` → generates Port1–Port8 of QSFP56/200G/uplink
+- **Named**: `Mgmt:RJ45:1:uplink:bond0` → single named port
+- **Mixed**: `QSFP56:200:uplink:8, SFP28:25:uplink:2, Mgmt:RJ45:1:uplink`
 
-多个计数式条目共享计数器，端口命名自动递增（Port1~8, Port9~10, Port11）。
+Multiple count-based entries share a sequential counter (Port1–8, then Port9–10, etc.).
 
-也兼容 JSON 格式：`'[{"port_name":"Port1","port_type":"QSFP56",...}]'`
+JSON format is also supported: `'[{"port_name":"Port1","port_type":"QSFP56",...}]'`
 
-### 3. 连接规则（YAML）
+### 3. Connection Rules (YAML)
 
 ```yaml
 rules:
@@ -120,7 +128,7 @@ rules:
     priority: 0
     cable_preference: fiber     # auto / dac / aoc / fiber
     allow_same_rack: true
-    max_distance_m: null        # 可选：最大线缆距离限制
+    max_distance_m: null        # optional max cable distance
 
   - name: "Backend Leaf → Backend Spine"
     src_device_type: backend_leaf
@@ -129,93 +137,94 @@ rules:
     dst_device_type: backend_spine
     dst_port_type: QSFP56
     dst_direction: downlink
-    pattern: mesh               # 每台 Leaf 均匀分布于各 Spine
+    pattern: mesh               # evenly distributes across spines
     allow_same_rack: false
     priority: 3
     cable_preference: fiber
 ```
 
-**连接模式：**
+**Connection patterns:**
 
-| 模式 | 说明 |
-|------|------|
-| `one_to_one` | 一对一配对 |
-| `many_to_one` | N 个源端口汇聚到 1 个目标端口（`ports_per_group` 控制 N） |
-| `mesh` | Spine-Leaf 全网状互联，Leaf 上行端口均匀分配至 Spine |
+| Pattern | Description |
+|---------|-------------|
+| `one_to_one` | Pair ports by index order |
+| `many_to_one` | N source ports → 1 destination port (`ports_per_group`) |
+| `mesh` | Spine-Leaf full mesh with round-robin distribution across spines |
 
-**Leaf/Spine 隔离：** 后端和前端网络均禁止 Leaf↔Leaf、Spine↔Spine 连接，即使误配泛型规则也不会出现。
+**Leaf/Spine isolation:** Backend and frontend networks enforce that Leaf↔Leaf
+and Spine↔Spine connections are never created, even with misconfigured generic rules.
 
-## 布线模型
+## Cable Routing Model
 
-采用 **上走线（Overhead Cable Tray）** 模型：
+Overhead cable tray routing with two cases:
 
 ```
-同排（同一 row）：
-  设备A ──垂直上行──→ 排内直连（不走通道走线架）──→ ──垂直下行──→ 设备B
-  水平 = 曼哈顿距离（无 tray_offset）
+Same row:
+  Device A ──up──→ direct row routing (no aisle tray) ──→ ──down──→ Device B
+  Horizontal = Manhattan distance only (no tray_offset)
 
-跨排（不同 row）：
-  设备A ──垂直上行──→ 偏移 tray_offset 进入通道走线架 ──→ 沿走线架 ──→ 偏移 tray_offset 离开 ──→ ──垂直下行──→ 设备B
-  水平 = 曼哈顿距离 + tray_offset × 2
+Cross row:
+  Device A ──up──→ tray_offset into aisle tray ──→ along tray ──→ tray_offset out ──→ ──down──→ Device B
+  Horizontal = Manhattan distance + tray_offset × 2
 
-总长度 = (水平距离 + 垂直距离A + 垂直距离B) / 1000 × 余量系数(1.15)
+Total = (horizontal + vertical_A + vertical_B) / 1000 × slack_factor (1.15)
 ```
 
-- 曼哈顿距离 = `|x₁ - x₂| + |y₁ - y₂|`（模拟正交走线架）
-- 垂直距离 = `走线架高度 - 设备U位中点高度`（取 ≥0）
+- Manhattan distance = `|x₁ − x₂| + |y₁ − y₂|` (orthogonal aisle routing)
+- Vertical = `tray_height − device_midpoint_height` (≥ 0)
 
-## 线缆匹配规则
+## Cable Matching Rules
 
-| 端口 | 速度 | ≤3m / ≤5m | 中距离 | >30m |
-|------|------|-----------|--------|------|
-| QSFP112 | 800G | QSFP112 DAC (≤3m) | QSFP112 AOC (3–30m) | QSFP112 SR8 光纤 |
-| OSFP | 800G | OSFP 800G DAC (≤3m) | OSFP 800G AOC (3–30m) | OSFP 800G SR8 光纤 |
-| QSFP56-DD | 400G | QSFP56-DD DAC (≤5m) | QSFP56-DD AOC (5–30m) | QSFP56-DD SR8 光纤 |
-| QSFP56 | 200G | QSFP56 DAC (≤5m) | QSFP56 AOC (5–30m) | QSFP56 SR4 光纤 |
-| QSFP28 | 100G | QSFP28 DAC (≤5m) | QSFP28 AOC (5–30m) | QSFP28 SR4 光纤 |
-| SFP28 | 25G | SFP28 DAC (≤5m) | SFP28 AOC (5–30m) | SFP28 SR 光纤 |
-| RJ45 | 1G/10G | Cat6/Cat6a 跳线 (≤100m) | — | — |
+| Port | Speed | Short | Medium | Long |
+|------|-------|-------|--------|------|
+| QSFP112 | 800G | DAC (≤3m) | AOC (3–30m) | QSFP112 SR8 Fiber |
+| OSFP | 800G | DAC (≤3m) | AOC (3–30m) | OSFP 800G SR8 Fiber |
+| QSFP56-DD | 400G | DAC (≤5m) | AOC (5–30m) | QSFP56-DD SR8 Fiber |
+| QSFP56 | 200G | DAC (≤5m) | AOC (5–30m) | QSFP56 SR4 Fiber |
+| QSFP28 | 100G | DAC (≤5m) | AOC (5–30m) | QSFP28 SR4 Fiber |
+| SFP28 | 25G | DAC (≤5m) | AOC (5–30m) | SFP28 SR Fiber |
+| RJ45 | 1G/10G | Cat6/Cat6a (≤100m) | — | — |
 
-线缆长度自动向上取整到标准长度（可自定义 `config/sample_cable_lengths.yaml`）。
+Lengths are snapped up to the nearest standard length (customizable via `config/sample_cable_lengths.yaml`).
 
-## 输出文件
+## Output Files
 
-每次运行生成 **三种语言** 的 Excel 文件（`_zh` / `_ja` / `_en` 后缀），
-每种语言包含 4 个 Sheet：
+Each run produces **three language variants** ( `_zh` / `_ja` / `_en` suffixes),
+each containing 4 sheets:
 
-| Sheet | 内容 |
-|-------|------|
-| 端口映射表 | 源/目标设备、机柜、U 位、端口、线缆类型、标准长度、计算长度、光模块需求 |
-| 线缆汇总 BOM | 每种线缆按长度细分（如 QSFP56 SR4: 5m×20 + 10m×60），含小计和总计 |
-| 光模块汇总 | 光模块类型、数量、对应连接数 |
-| 设备连接统计 | 每台设备的总连接数、上/下行连接数、使用的端口类型 |
+| Sheet | Content |
+|-------|---------|
+| Port Mapping | Source/dest device, rack, RU, port, cable type, standard & calculated length, transceiver |
+| Cable BOM | Per-length breakdown (e.g. QSFP56 SR4: 5m×20 + 10m×60), subtotals, grand total |
+| Transceiver Summary | Transceiver type, quantity, connections served |
+| Device Connection Summary | Per-device total/uplink/downlink counts and port types used |
 
-## 项目结构
+## Project Structure
 
 ```
 ai-dc-port-mapper/
 ├── README.md
+├── README_zh.md                         # Chinese README
 ├── requirements.txt
 ├── config/
-│   ├── sample_rack_layout.yaml          # 参数化机柜布局
-│   ├── sample_devices.xlsx              # 设备清单示例
-│   ├── sample_connection_rules.yaml     # 连接规则
-│   └── sample_cable_lengths.yaml        # 自定义线缆标准长度（可选）
+│   ├── sample_rack_layout.yaml          # Parametric rack layout
+│   ├── sample_devices.xlsx              # Device inventory
+│   ├── sample_connection_rules.yaml     # Connection rules
+│   └── sample_cable_lengths.yaml        # Custom cable standard lengths (optional)
 ├── src/
-│   ├── models.py                        # 数据模型（Device, Port, Rack, Connection 等）
-│   ├── parser.py                        # 输入解析（Excel / YAML + 参数化布局）
-│   ├── distance.py                      # 线缆长度计算
-│   ├── cable_matcher.py                 # 线缆类型匹配（含 QSFP112/OSFP 800G）
-│   ├── mapper.py                        # 端口映射核心（one_to_one / many_to_one / mesh）
-│   ├── writer.py                        # 多语言 Excel 输出
-│   ├── i18n.py                          # 中/日/英三语字符串
-│   └── main.py                          # CLI 入口
+│   ├── models.py                        # Data models
+│   ├── parser.py                        # Input parsers (Excel/YAML + parametric layout)
+│   ├── distance.py                      # Cable length calculation
+│   ├── cable_matcher.py                 # Cable type matching (QSFP112/OSFP 800G)
+│   ├── mapper.py                        # Port mapping engine
+│   ├── writer.py                        # Multi-language Excel output
+│   ├── i18n.py                          # Chinese / Japanese / English strings
+│   └── main.py                          # CLI entry point
 ├── tests/
-│   ├── test_models.py（隐式）
-│   ├── test_parser.py                   # 解析器测试（含参数化布局 + 向后兼容）
-│   ├── test_distance.py                 # 距离计算测试
-│   ├── test_cable_matcher.py            # 线缆匹配测试（含 QSFP112/OSFP + Breakout）
-│   └── test_integration.py             # 集成测试（含 Leaf/Spine 隔离 + Mesh 均匀分布）
+│   ├── test_parser.py                   # Parser tests (parametric layout + backward compat)
+│   ├── test_distance.py                 # Distance calculation tests
+│   ├── test_cable_matcher.py            # Cable matching tests (QSFP112/OSFP + breakout)
+│   └── test_integration.py             # Integration tests (Leaf/Spine isolation + mesh distribution)
 └── scripts/
-    └── generate_samples.py              # 生成示例配置文件
+    └── generate_samples.py              # Sample config generator
 ```
