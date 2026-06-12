@@ -335,6 +335,9 @@ def get_port_type_compatibility(
         (PortType.QSFP112, PortType.QSFP56):    "QSFP112→2×QSFP56 fan-out possible",
         (PortType.QSFP112, PortType.QSFP28):    "QSFP112→4×QSFP28 fan-out possible",
         # 400G breakouts (QSFP56-DD)
+        (PortType.QSFP56_DD, PortType.QSFP56): "QSFP56-DD→2×QSFP56 breakout possible",
+        (PortType.QSFP56_DD, PortType.QSFP28): "QSFP56-DD→4×QSFP28 breakout possible",
+        (PortType.QSFP56_DD, PortType.SFP28):  "QSFP56-DD→8×SFP28 breakout possible",
         # 200G breakouts
         (PortType.QSFP56, PortType.QSFP28):   "QSFP56→2×QSFP28 breakout possible",
         (PortType.QSFP56, PortType.SFP28):    "QSFP56→4×SFP28 breakout possible",
