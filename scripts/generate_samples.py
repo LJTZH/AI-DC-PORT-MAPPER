@@ -119,18 +119,17 @@ for i, col in enumerate([3, 7]):
         "ports": "RJ45:1:downlink:48",
     })
 
-# 2 In-band Management switches (optional — uncomment to enable)
-# 24x SFP28 25G downlink + 4x QSFP28 100G uplink
+# 2 In-band Management switches — 24x SFP28 25G downlink + 4x QSFP28 100G uplink
 # Placed in Row 2, Cols 4,8
-# for i, col in enumerate([4, 8]):
-#     devices.append({
-#         "name": f"Inband-Switch-{i+1:02d}",
-#         "device_type": "inband_switch",
-#         "rack_id": rack_id(2, col),
-#         "ru_start": 39,
-#         "ru_height": 1,
-#         "ports": "SFP28:25:downlink:24, QSFP28:100:uplink:4",
-#     })
+for i, col in enumerate([4, 8]):
+    devices.append({
+        "name": f"Inband-Switch-{i+1:02d}",
+        "device_type": "inband_switch",
+        "rack_id": rack_id(2, col),
+        "ru_start": 39,
+        "ru_height": 1,
+        "ports": "SFP28:25:downlink:24, QSFP28:100:uplink:4",
+    })
 
 df_devices = pd.DataFrame(devices)
 df_devices.to_excel(str(config_dir / "sample_devices.xlsx"), index=False)

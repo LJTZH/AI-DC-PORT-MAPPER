@@ -79,6 +79,20 @@ rules:
     priority: 4
     cable_preference: fiber
 
+  # ── 带内交换机 → 前端 Spine (带内管理上行) ──
+  # 带内管理通过前端网络 Spine 汇聚，与数据流量共享物理网络，逻辑隔离。
+  - name: "Inband Switch → Frontend Spine"
+    src_device_type: inband_switch
+    src_port_type: QSFP28
+    src_direction: uplink
+    dst_device_type: frontend_spine
+    dst_port_type: QSFP28
+    dst_direction: downlink
+    pattern: one_to_one
+    allow_same_rack: false
+    priority: 5
+    cable_preference: fiber
+
   # ── 带内管理网络 (取消注释以启用) ──
   # 带内管理通过数据网络传输管理流量，与带外管理 (BMC/IPMI) 互补。
   # 通常使用前端网络交换机上的 SFP28 端口或独立的 inband_switch。
