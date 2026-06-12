@@ -254,10 +254,11 @@ def _parse_ports_compact(text: str) -> list[Port]:
     if len(parts) == 4 and parts[3].strip().isdigit():
         port_type_str, speed_str, dir_str, count_str = parts
         count = int(count_str)
+        prefix = port_type_str.strip()
         for i in range(1, count + 1):
             ports.append(Port(
-                port_name=f"Port{i}",
-                port_type=PortType(port_type_str.strip()),
+                port_name=f"{prefix}-{i}",
+                port_type=PortType(prefix),
                 speed_gbps=int(speed_str.strip()),
                 direction=PortDirection(dir_str.strip()),
             ))
@@ -275,8 +276,12 @@ def _parse_ports_compact(text: str) -> list[Port]:
         return []
 
     # ── Comma-separated: each item may be count-based or individual ──
-    # Shared port counter so multiple count-based items produce sequential names.
-    port_counter = 1
+    # Each port type has its own sequential counter so that multiple
+    # entries of the same type produce non-overlapping names, e.g.:
+    # "QSFP56:200:downlink:32, QSFP56:200:uplink:8"
+    #   → QSFP56-1..QSFP56-32 (downlink), QSFP56-33..QSFP56-40 (uplink)
+
+    type_counters: dict[str, int] = {}
 
     items = text.split(",")
     for item in items:
@@ -290,14 +295,16 @@ def _parse_ports_compact(text: str) -> list[Port]:
             port_type = PortType(port_type_str.strip())
             speed = int(speed_str.strip())
             direction = PortDirection(dir_str.strip())
-            for _ in range(count):
+            prefix = port_type_str.strip()
+            start = type_counters.get(prefix, 0) + 1
+            for i in range(start, start + count):
                 ports.append(Port(
-                    port_name=f"Port{port_counter}",
+                    port_name=f"{prefix}-{i}",
                     port_type=port_type,
                     speed_gbps=speed,
                     direction=direction,
                 ))
-                port_counter += 1
+            type_counters[prefix] = start + count - 1
             continue
 
         # Individual sub-item: "NAME:TYPE:SPEED[:DIR[:GROUP]]"
@@ -309,14 +316,6 @@ def _parse_ports_compact(text: str) -> list[Port]:
                 direction=PortDirection(pp[3].strip() if len(pp) >= 4 else "any"),
                 group=pp[4].strip() if len(pp) >= 5 else "",
             ))
-            # Extract port number if named "PortN" to keep counter in sync
-            name = pp[0].strip()
-            if name.startswith("Port"):
-                try:
-                    n = int(name[4:])
-                    port_counter = max(port_counter, n + 1)
-                except ValueError:
-                    pass
         else:
             warnings.warn(
                 f"Malformed port entry '{item.strip()}' in '{text}': "
