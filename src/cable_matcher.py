@@ -327,18 +327,14 @@ def get_port_type_compatibility(
 
     # Breakout scenarios: higher-speed port → multiple lower-speed ports
     breakout_pairs = {
-        # 800G breakouts (OSFP)
-        (PortType.OSFP, PortType.QSFP56_DD):    "OSFP→2×QSFP56-DD breakout possible",
-        (PortType.OSFP, PortType.QSFP56):       "OSFP→4×QSFP56 breakout possible",
-        (PortType.OSFP, PortType.QSFP28):       "OSFP→8×QSFP28 breakout possible",
+        # 800G breakouts (OSFP 800G)
+        (PortType.OSFP, PortType.QSFP56_DD):    "OSFP 800G→2×QSFP56-DD breakout possible",
+        (PortType.OSFP, PortType.QSFP56):       "OSFP 800G→4×QSFP56 breakout possible",
+        (PortType.OSFP, PortType.QSFP28):       "OSFP 800G→8×QSFP28 breakout possible",
         # 400G breakouts / fan-outs (QSFP112)
         (PortType.QSFP112, PortType.QSFP56):    "QSFP112→2×QSFP56 fan-out possible",
         (PortType.QSFP112, PortType.QSFP28):    "QSFP112→4×QSFP28 fan-out possible",
-        # 400G breakouts
-        (PortType.QSFP56_DD, PortType.QSFP56): "QSFP56-DD→2×QSFP56 breakout possible",
-        (PortType.QSFP56_DD, PortType.QSFP28): "QSFP56-DD→4×QSFP28 breakout possible",
-        (PortType.QSFP56_DD, PortType.SFP28):  "QSFP56-DD→8×SFP28 breakout possible",
-        (PortType.OSFP, PortType.QSFP56_DD):   "OSFP 400G→QSFP56-DD compatible",
+        # 400G breakouts (QSFP56-DD)
         # 200G breakouts
         (PortType.QSFP56, PortType.QSFP28):   "QSFP56→2×QSFP28 breakout possible",
         (PortType.QSFP56, PortType.SFP28):    "QSFP56→4×SFP28 breakout possible",

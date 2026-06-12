@@ -38,7 +38,7 @@ class DeviceType(str, Enum):
 
 class PortType(str, Enum):
     """Supported port connector types."""
-    QSFP112 = "QSFP112"          # 400G (4×100G PAM4)
+    QSFP112 = "QSFP112"          # 400G (4×112G PAM4)
     QSFP56_DD = "QSFP56-DD"      # 400G (8×50G PAM4)
     QSFP56 = "QSFP56"            # 200G (4×50G PAM4)
     QSFP28 = "QSFP28"            # 100G (4×25G NRZ)
@@ -47,7 +47,7 @@ class PortType(str, Enum):
     SFP_PLUS = "SFP+"            # 10G
     SFP = "SFP"                  # 1G SFP
     RJ45 = "RJ45"                # 1G/10G Copper
-    OSFP = "OSFP"                # 400G/800G
+    OSFP = "OSFP"                # 400G (8×50G) / 800G (8×112G PAM4)
 
 
 class PortDirection(str, Enum):
