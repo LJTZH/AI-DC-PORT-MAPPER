@@ -351,7 +351,9 @@ def _match_many_to_one(
                 # All src ports in this group share the same rack_id (grouped by rack)
                 first_src_dev = group[0][0] if group else None
                 if first_src_dev and first_src_dev.rack_id == dst_dev.rack_id:
-                    # Skip this group — same rack not allowed
+                    # Skip this group — same rack not allowed.
+                    # Advance dst_idx so the dst port isn't abandoned.
+                    dst_idx += 1
                     continue
 
             for src_dev, src_port in group:
