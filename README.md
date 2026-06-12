@@ -179,6 +179,7 @@ Total = (horizontal + vertical_A + vertical_B) / 1000 × slack_factor (1.15)
 |------|-------|-------|--------|------|
 | QSFP112 | 400G | DAC (≤3m) | AOC (3–30m) | QSFP112 SR4 Fiber |
 | OSFP | 800G | DAC (≤3m) | AOC (3–30m) | OSFP 800G SR8 Fiber |
+| OSFP | 400G | DAC (≤5m) | AOC (5–30m) | OSFP SR8 Fiber |
 | QSFP56-DD | 400G | DAC (≤5m) | AOC (5–30m) | QSFP56-DD SR8 Fiber |
 | QSFP56 | 200G | DAC (≤5m) | AOC (5–30m) | QSFP56 SR4 Fiber |
 | QSFP28 | 100G | DAC (≤5m) | AOC (5–30m) | QSFP28 SR4 Fiber |

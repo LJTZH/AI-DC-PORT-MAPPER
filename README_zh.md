@@ -170,6 +170,7 @@ rules:
 |------|------|-----------|--------|------|
 | QSFP112 | 400G | QSFP112 DAC (≤3m) | QSFP112 AOC (3–30m) | QSFP112 SR4 光纤 |
 | OSFP | 800G | OSFP 800G DAC (≤3m) | OSFP 800G AOC (3–30m) | OSFP 800G SR8 光纤 |
+| OSFP | 400G | OSFP DAC (≤5m) | OSFP AOC (5–30m) | OSFP SR8 光纤 |
 | QSFP56-DD | 400G | QSFP56-DD DAC (≤5m) | QSFP56-DD AOC (5–30m) | QSFP56-DD SR8 光纤 |
 | QSFP56 | 200G | QSFP56 DAC (≤5m) | QSFP56 AOC (5–30m) | QSFP56 SR4 光纤 |
 | QSFP28 | 100G | QSFP28 DAC (≤5m) | QSFP28 AOC (5–30m) | QSFP28 SR4 光纤 |
