@@ -1,0 +1,136 @@
+# AI 数据中心连接规则配置
+# 端口方向约定: uplink=朝网络核心, downlink=朝服务器/终端
+#
+# 设备类型 (DeviceType):
+#   gpu_server      — GPU 服务器
+#   backend_switch  — 后端网络交换机 (GPU 计算互联 / RDMA Fabric)
+#   frontend_switch — 前端网络交换机 (存储 / 业务网络)
+#   inband_switch   — 带内管理交换机 (管理流量走数据网络)
+#   mgmt_switch     — 带外管理交换机 (BMC/IPMI 专网)
+#   兼容旧名: rdma_switch, eth_switch
+#
+# cable_preference: "auto"  — 自动根据距离选择 DAC/AOC/Fiber
+# cable_preference: "fiber" — 强制使用光纤跳线 + 可插拔光模块
+# cable_preference: "aoc"   — 强制使用 AOC（内置光模块，无需额外采购）
+# cable_preference: "dac"   — 强制使用 DAC 铜缆
+
+rules:
+  # ── GPU 服务器 → 后端 Leaf 交换机 (计算互联 / GPU Fabric) ──
+  # GPU uplink → Leaf downlink
+  - name: "GPU → Backend Leaf (Compute Fabric)"
+    src_device_type: gpu_server
+    src_port_type: QSFP56
+    src_direction: uplink
+    dst_device_type: backend_leaf
+    dst_port_type: QSFP56
+    dst_direction: downlink
+    pattern: one_to_one
+    priority: 0
+    cable_preference: fiber
+
+  # ── GPU 服务器 → 前端 Leaf 交换机 (存储 / 业务网络) ──
+  - name: "GPU → Frontend Leaf (Storage/LAN)"
+    src_device_type: gpu_server
+    src_port_type: SFP28
+    src_direction: uplink
+    dst_device_type: frontend_leaf
+    dst_port_type: SFP28
+    dst_direction: downlink
+    pattern: one_to_one
+    priority: 1
+    cable_preference: fiber
+
+  # ── GPU 服务器 → 带外管理交换机 (BMC/IPMI) ──
+  - name: "GPU → Management Switch (OOB)"
+    src_device_type: gpu_server
+    src_port_type: RJ45
+    src_direction: uplink
+    dst_device_type: mgmt_switch
+    dst_port_type: RJ45
+    dst_direction: downlink
+    pattern: many_to_one
+    ports_per_group: 48
+    priority: 2
+
+  # ── 后端 Leaf → 后端 Spine (Spine-Leaf 互联) ──
+  # Leaf uplink → Spine downlink (mesh = every leaf connects to every spine)
+  - name: "Backend Leaf → Backend Spine"
+    src_device_type: backend_leaf
+    src_port_type: QSFP56
+    src_direction: uplink
+    dst_device_type: backend_spine
+    dst_port_type: QSFP56
+    dst_direction: downlink
+    pattern: mesh
+    allow_same_rack: false
+    priority: 3
+    cable_preference: fiber
+
+  # ── 前端 Leaf → 前端 Spine ──
+  - name: "Frontend Leaf → Frontend Spine"
+    src_device_type: frontend_leaf
+    src_port_type: QSFP28
+    src_direction: uplink
+    dst_device_type: frontend_spine
+    dst_port_type: QSFP28
+    dst_direction: downlink
+    pattern: one_to_one
+    allow_same_rack: false
+    priority: 4
+    cable_preference: fiber
+
+  # ── 带内管理网络 (取消注释以启用) ──
+  # 带内管理通过数据网络传输管理流量，与带外管理 (BMC/IPMI) 互补。
+  # 通常使用前端网络交换机上的 SFP28 端口或独立的 inband_switch。
+  #
+  # - name: "GPU → Inband Management Switch"
+  #   src_device_type: gpu_server
+  #   src_port_type: SFP28
+  #   src_direction: uplink
+  #   dst_device_type: inband_switch
+  #   dst_port_type: SFP28
+  #   dst_direction: downlink
+  #   pattern: one_to_one
+  #   priority: 5
+  #   cable_preference: fiber
+  #
+  # - name: "Inband Switch → Frontend Switch (uplink)"
+  #   src_device_type: inband_switch
+  #   src_port_type: QSFP28
+  #   src_direction: uplink
+  #   dst_device_type: frontend_switch
+  #   dst_port_type: QSFP28
+  #   dst_direction: downlink
+  #   pattern: one_to_one
+  #   priority: 6
+  #   cable_preference: fiber
+
+  # ── QSFP112 / OSFP 800G 示例 (取消注释以启用) ──
+  # QSFP112 是 800G (8×100G PAM4) 端口, OSFP 也支持 800G.
+  # DAC ≤3m | AOC 3–30m | 光纤 >30m (配 QSFP112 SR8 或 OSFP 800G SR8 光模块).
+  #
+  # - name: "GPU 800G → Backend Leaf 800G"
+  #   src_device_type: gpu_server
+  #   src_port_type: QSFP112
+  #   src_direction: uplink
+  #   dst_device_type: backend_leaf
+  #   dst_port_type: QSFP112
+  #   dst_direction: downlink
+  #   pattern: one_to_one
+  #   priority: 0
+  #   cable_preference: fiber
+  #
+  # - name: "Backend 800G Leaf → Backend 800G Spine"
+  #   src_device_type: backend_leaf
+  #   src_port_type: OSFP
+  #   src_direction: uplink
+  #   dst_device_type: backend_spine
+  #   dst_port_type: OSFP
+  #   dst_direction: downlink
+  #   pattern: mesh
+  #   allow_same_rack: false
+  #   priority: 3
+  #   cable_preference: fiber
+  #
+  # 支持的 breakouts: QSFP112→2×QSFP56-DD | QSFP112→4×QSFP56 |
+  #                    OSFP→2×QSFP56-DD | OSFP→4×QSFP56

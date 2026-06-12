@@ -1,0 +1,13 @@
+layout:
+  num_rows: 2
+  racks_per_row: 8
+  rack_width_mm: 600
+  rack_depth_mm: 1200
+  rack_height_u: 42
+  col_spacing_m: 0.8
+  row_spacing_m: 3.0
+  tray_height_m: 2.6
+  tray_side: low
+  tray_offset_m: 0.6
+  origin_x_m: 0.0
+  origin_y_m: 0.0
