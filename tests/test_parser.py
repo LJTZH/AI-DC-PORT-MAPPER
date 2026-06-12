@@ -22,20 +22,20 @@ from src.models import Port, PortType, PortDirection, DeviceType
 
 class TestParsePortsCompact:
     def test_count_based_pattern(self):
-        """QSFP28:100:downlink:4 → 4 ports named QSFP28-1 through QSFP28-4."""
+        """QSFP28:100:downlink:4 → 4 ports named Port1-Port4."""
         ports = _parse_ports_compact("QSFP28:100:downlink:4")
         assert len(ports) == 4
-        assert ports[0].port_name == "QSFP28-1"
+        assert ports[0].port_name == "Port1"
         assert ports[0].port_type == PortType.QSFP28
         assert ports[0].speed_gbps == 100
         assert ports[0].direction == PortDirection.DOWNLINK
-        assert ports[3].port_name == "QSFP28-4"
+        assert ports[3].port_name == "Port4"
 
     def test_count_based_with_spaces(self):
         """Whitespace around fields is stripped."""
         ports = _parse_ports_compact(" QSFP56 : 200 : uplink : 3 ")
         assert len(ports) == 3
-        assert ports[0].port_name == "QSFP56-1"
+        assert ports[0].port_name == "Port1"
         assert ports[0].port_type == PortType.QSFP56
         assert ports[0].direction == PortDirection.UPLINK
 
@@ -67,43 +67,35 @@ class TestParsePortsCompact:
         assert _parse_ports_compact("") == []
         assert _parse_ports_compact("   ") == []
 
-    def test_mixed_count_based_per_type(self):
-        """Each type has its own sequential counter; same type continues numbering."""
+    def test_mixed_count_based_per_group(self):
+        """Each comma-separated group independently starts at Port1."""
         ports = _parse_ports_compact(
             "QSFP56:200:uplink:3, SFP28:25:uplink:2, RJ45:1:downlink:1"
         )
         assert len(ports) == 6
-        # QSFP56-1, QSFP56-2, QSFP56-3
-        assert ports[0].port_name == "QSFP56-1"
-        assert ports[2].port_name == "QSFP56-3"
-        # SFP28-1, SFP28-2
-        assert ports[3].port_name == "SFP28-1"
-        assert ports[4].port_name == "SFP28-2"
-        # RJ45-1
-        assert ports[5].port_name == "RJ45-1"
-
-    def test_same_type_sequential_numbering(self):
-        """Two entries of same type produce non-overlapping sequential names."""
-        ports = _parse_ports_compact(
-            "QSFP56:200:downlink:32, QSFP56:200:uplink:8"
-        )
-        assert len(ports) == 40
-        assert ports[0].port_name == "QSFP56-1"
-        assert ports[31].port_name == "QSFP56-32"
-        assert ports[32].port_name == "QSFP56-33"
-        assert ports[39].port_name == "QSFP56-40"
+        # Group 1: Port1-3 (QSFP56/200G)
+        assert ports[0].port_name == "Port1"
+        assert ports[0].port_type == PortType.QSFP56
+        assert ports[2].port_name == "Port3"
+        # Group 2: Port1-2 (SFP28/25G)
+        assert ports[3].port_name == "Port1"
+        assert ports[3].port_type == PortType.SFP28
+        assert ports[4].port_name == "Port2"
+        # Group 3: Port1 (RJ45/1G)
+        assert ports[5].port_name == "Port1"
+        assert ports[5].port_type == PortType.RJ45
 
     def test_mixed_individual_and_count_based(self):
-        """Individual port specs mixed with count-based — named port kept as-is."""
+        """Individual named port + count-based; count-based restarts at Port1."""
         ports = _parse_ports_compact(
             "Mgmt:QSFP56:200:uplink, SFP28:25:downlink:2"
         )
         assert len(ports) == 3
         assert ports[0].port_name == "Mgmt"
         assert ports[0].port_type == PortType.QSFP56
-        assert ports[1].port_name == "SFP28-1"
+        assert ports[1].port_name == "Port1"
         assert ports[1].port_type == PortType.SFP28
-        assert ports[2].port_name == "SFP28-2"
+        assert ports[2].port_name == "Port2"
 
     def test_malformed_entry_warns(self):
         """Too few fields emits a warning."""

@@ -254,11 +254,10 @@ def _parse_ports_compact(text: str) -> list[Port]:
     if len(parts) == 4 and parts[3].strip().isdigit():
         port_type_str, speed_str, dir_str, count_str = parts
         count = int(count_str)
-        prefix = port_type_str.strip()
         for i in range(1, count + 1):
             ports.append(Port(
-                port_name=f"{prefix}-{i}",
-                port_type=PortType(prefix),
+                port_name=f"Port{i}",
+                port_type=PortType(port_type_str.strip()),
                 speed_gbps=int(speed_str.strip()),
                 direction=PortDirection(dir_str.strip()),
             ))
@@ -276,12 +275,10 @@ def _parse_ports_compact(text: str) -> list[Port]:
         return []
 
     # ── Comma-separated: each item may be count-based or individual ──
-    # Each port type has its own sequential counter so that multiple
-    # entries of the same type produce non-overlapping names, e.g.:
-    # "QSFP56:200:downlink:32, QSFP56:200:uplink:8"
-    #   → QSFP56-1..QSFP56-32 (downlink), QSFP56-33..QSFP56-40 (uplink)
-
-    type_counters: dict[str, int] = {}
+    # Each count-based group independently starts at Port1 so that ports
+    # belonging to different networks have clean per-network numbering.
+    # Example: "QSFP56:200:uplink:8, SFP28:25:uplink:2, RJ45:1:uplink:1"
+    #   → Port1-8 (QSFP56/200G backend), Port1-2 (SFP28/25G frontend), Port1 (RJ45/mgmt)
 
     items = text.split(",")
     for item in items:
@@ -295,16 +292,13 @@ def _parse_ports_compact(text: str) -> list[Port]:
             port_type = PortType(port_type_str.strip())
             speed = int(speed_str.strip())
             direction = PortDirection(dir_str.strip())
-            prefix = port_type_str.strip()
-            start = type_counters.get(prefix, 0) + 1
-            for i in range(start, start + count):
+            for i in range(1, count + 1):
                 ports.append(Port(
-                    port_name=f"{prefix}-{i}",
+                    port_name=f"Port{i}",
                     port_type=port_type,
                     speed_gbps=speed,
                     direction=direction,
                 ))
-            type_counters[prefix] = start + count - 1
             continue
 
         # Individual sub-item: "NAME:TYPE:SPEED[:DIR[:GROUP]]"

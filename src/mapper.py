@@ -87,12 +87,8 @@ def _select_ports(
 
 
 def _mark_assigned(device: Device, port: Port):
-    """Mark a port as assigned."""
-    # Find the port in the device's port list and mark it
-    for p in device.ports:
-        if p.port_name == port.port_name:
-            p.assigned = True
-            return
+    """Mark a port as assigned. Uses object identity to handle duplicate names."""
+    port.assigned = True
 
 
 def _make_connection(
