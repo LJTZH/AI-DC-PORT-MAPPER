@@ -105,6 +105,7 @@ CABLE_CATALOG: list[_CableEntry] = [
 
     # ── SFP 1G ──
     _CableEntry("SFP", 1, "DAC",   "SFP DAC",      0.5, 5.0),
+    _CableEntry("SFP", 1, "AOC",   "SFP AOC",      5.0, 30.0),
     _CableEntry("SFP", 1, "Fiber", "SFP SX Fiber",  0.5, 550.0,
                 transceiver_type="SFP SX", connector="LC"),
 

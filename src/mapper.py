@@ -350,6 +350,14 @@ def _match_many_to_one(
             group = rack_srcs[i:i + n_per_group]
             dst_dev, dst_port = dst_ports[dst_idx]
 
+            # Check same-rack restriction
+            if not rule.allow_same_rack:
+                # All src ports in this group share the same rack_id (grouped by rack)
+                first_src_dev = group[0][0] if group else None
+                if first_src_dev and first_src_dev.rack_id == dst_dev.rack_id:
+                    # Skip this group — same rack not allowed
+                    continue
+
             for src_dev, src_port in group:
                 # Guard against missing rack references
                 src_rack = rack_index.get(src_dev.rack_id)

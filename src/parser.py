@@ -163,6 +163,7 @@ def _parse_rack_layout_parametric(config: dict) -> list[Rack]:
     height_u = int(config.get("rack_height_u", 42))
     tray_side = str(config.get("tray_side", "low"))
     tray_offset_m = float(config.get("tray_offset_m", 0.0))
+    tray_height_m = float(config.get("tray_height_m", 0.0))
 
     racks = []
     for row in range(1, num_rows + 1):
@@ -183,6 +184,7 @@ def _parse_rack_layout_parametric(config: dict) -> list[Rack]:
                 height_u=height_u,
                 tray_side=tray_side,
                 tray_offset_m=tray_offset_m,
+                tray_height_m=tray_height_m,
             ))
 
     return racks

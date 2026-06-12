@@ -133,6 +133,7 @@ class Rack:
     height_u: int = 42          # Total rack height in U
     tray_side: str = "low"      # Cable tray side: "low" (near smaller col #s) or "high"
     tray_offset_m: float = 0.0  # Horizontal distance from rack center to cable tray (m)
+    tray_height_m: float = 0.0  # Cable tray height from floor (m); 0 = use CLI default
 
 
 @dataclass

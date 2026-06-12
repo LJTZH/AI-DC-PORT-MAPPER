@@ -56,7 +56,14 @@ def calculate_cable_length_m(
     Returns:
         Total cable length in meters.
     """
-    tray_height_mm = tray_height_m * MM_PER_M
+    # Use rack-level tray_height_m from YAML layout if configured, else CLI default
+    effective_tray_h = tray_height_m
+    if rack_a.tray_height_m > 0:
+        effective_tray_h = rack_a.tray_height_m
+    elif rack_b.tray_height_m > 0:
+        effective_tray_h = rack_b.tray_height_m
+
+    tray_height_mm = effective_tray_h * MM_PER_M
 
     # Horizontal distance along cable tray (meters)
     horiz_m = rack_horizontal_distance_m(rack_a, rack_b)
@@ -65,8 +72,8 @@ def calculate_cable_length_m(
     dev_a_h = port_center_height_mm(device_a)
     dev_b_h = port_center_height_mm(device_b)
 
-    vert_a_mm = max(0, tray_height_mm - dev_a_h)   # Up from device A to tray
-    vert_b_mm = max(0, tray_height_mm - dev_b_h)   # Up from device B to tray
+    vert_a_mm = abs(tray_height_mm - dev_a_h)   # Vertical distance A ↔ tray
+    vert_b_mm = abs(tray_height_mm - dev_b_h)   # Vertical distance B ↔ tray
 
     if rack_a.rack_id == rack_b.rack_id:
         # Same rack: cable routes up from lower device to tray, then down to
