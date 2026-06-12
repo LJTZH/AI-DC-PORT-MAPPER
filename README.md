@@ -48,6 +48,22 @@ python -m src.main \
     --output output/port_mapping.xlsx
 ```
 
+### CLI Reference
+
+| Flag | Short | Type | Default | Description |
+|------|-------|------|---------|-------------|
+| `--racks` | `-r` | PATH | *required* | Rack layout file (`.xlsx` explicit or `.yaml` parametric) |
+| `--devices` | `-d` | PATH | *required* | Device inventory file (`.xlsx` or `.yaml`) |
+| `--rules` | `-c` | PATH | *required* | Connection rules file (`.yaml`) |
+| `--tray-height` | `-t` | float | `2.6` | Cable tray height from floor (m) |
+| `--slack-factor` | `-s` | float | `1.15` | Cable slack multiplier (15%) |
+| `--cable-lengths` | `-l` | PATH | — | Custom cable standard lengths config (`.yaml`) |
+| `--output` | `-o` | PATH | `output/port_mapping.xlsx` | Output Excel file path |
+| `--batch` | `-b` | PATH | — | Batch config (`.yaml`) — overrides all individual options |
+
+The `--output` base path is automatically suffixed with `_zh`, `_ja`, `_en` to
+produce three language variants.
+
 ### Run tests
 
 ```bash

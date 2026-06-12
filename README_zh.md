@@ -40,6 +40,21 @@ python -m src.main \
     --output output/port_mapping.xlsx
 ```
 
+### CLI 参数参考
+
+| 参数 | 短选项 | 类型 | 默认值 | 说明 |
+|------|--------|------|--------|------|
+| `--racks` | `-r` | PATH | *必填* | 机柜布局文件（`.xlsx` 显式 或 `.yaml` 参数化格式） |
+| `--devices` | `-d` | PATH | *必填* | 设备清单文件（`.xlsx` 或 `.yaml`） |
+| `--rules` | `-c` | PATH | *必填* | 连接规则文件（`.yaml`） |
+| `--tray-height` | `-t` | float | `2.6` | 走线架距地面高度（m） |
+| `--slack-factor` | `-s` | float | `1.15` | 线缆余量系数（15%） |
+| `--cable-lengths` | `-l` | PATH | — | 自定义线缆标准长度配置（`.yaml`） |
+| `--output` | `-o` | PATH | `output/port_mapping.xlsx` | 输出 Excel 文件路径 |
+| `--batch` | `-b` | PATH | — | 批量配置文件（`.yaml`）— 覆盖所有单独参数 |
+
+`--output` 基础路径会自动附加 `_zh`、`_ja`、`_en` 后缀，生成三种语言版本。
+
 ### 运行测试
 
 ```bash
